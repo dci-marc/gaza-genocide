@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genocide in Gaza</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Nosifer', Roboto, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .counter-container {
+            background-color: #1e1e1e;
+            padding: 2rem 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .counter-container .days-count {
+            font-size: 15rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .counter-container .label {
+            margin-top: 0.5rem;
+            font-size: 3rem;
+            color: #b0b0b0;
+        }
+    </style>
+</head>
+<body>
+<div class="counter-container">
+    <div class="days-count" id="days">0</div>
+    <div class="label">days of genocide in Gaza</div>
+</div>
+
+<script>
+    const startDate = new Date("2023-10-07");
+
+    function updateDaysCount() {
+        const now = new Date();
+        const diffTime = now - startDate;
+        const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        document.getElementById("days").textContent = days;
+    }
+
+    updateDaysCount();
+    setInterval(updateDaysCount, 1000 * 60 * 60);
+</script>
+</body>
+</html>
