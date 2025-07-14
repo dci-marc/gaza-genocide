@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Genocide in Gaza</title>
     <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -28,6 +29,40 @@
             object-fit: cover;
             z-index: -2;
             pointer-events: none;
+        }
+
+        #names-container {
+            position: fixed;
+            right: 3rem;
+            width: 20rem;
+            height: 90%;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 1rem;
+            overflow: hidden;
+            z-index: 1;
+            font-family: 'Fondamento', sans-serif;
+            color: #cccccc;
+        }
+
+        #names-list {
+            position: relative;
+            animation: scroll-up linear infinite;
+        }
+
+        #names-list div {
+            padding: 4px 15px;
+            text-align: center;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        @keyframes scroll-up {
+            from {
+                transform: translateY(180px);
+            }
+            to {
+                transform: translateY(-100%);
+            }
         }
 
         .counter-container {
@@ -85,12 +120,18 @@
     <source src="https://github.com/dci-marc/gaza-genocide/raw/refs/heads/main/assets/video/hindshall.mp4" type="video/mp4" />
     Your browser does not support HTML5 video.
 </video>
+
+<div id="names-container">
+    <div id="names-list"></div>
+</div>
+
 <div class="counter-container">
     <div class="days-count" id="days">0</div>
     <div class="label">days of genocide in Gaza</div>
 </div>
 
 <script>
+    // --- Original script for the day counter ---
     const startDate = new Date("2023-10-07");
 
     function updateDaysCount() {
@@ -102,6 +143,41 @@
 
     updateDaysCount();
     setInterval(updateDaysCount, 1000 * 60);
+
+    // --- New script for fetching and displaying names ---
+    const namesList = document.getElementById('names-list');
+    const jsonUrl = 'https://data.techforpalestine.org/api/v2/killed-in-gaza.min.json';
+
+    fetch(jsonUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Populate the list with names
+            data.forEach(person => {
+                // Check if the name exists and is not empty
+                if (person.en_name && person.en_name.trim() !== "") {
+                    const nameElement = document.createElement('div');
+                    nameElement.textContent = person.en_name.trim();
+                    namesList.appendChild(nameElement);
+                }
+            });
+
+            // Adjust animation speed based on the number of names for readability
+            const numNames = namesList.children.length;
+            // Heuristic: ~40 names per minute (1.5 seconds per name)
+            const animationDuration = numNames * 1.5;
+            namesList.style.animationDuration = `${animationDuration}s`;
+        })
+        .catch(error => {
+            console.error('Failed to fetch names:', error);
+            const errorElement = document.createElement('div');
+            errorElement.textContent = 'Could not load names.';
+            namesList.appendChild(errorElement);
+        });
 </script>
 </body>
 </html>
