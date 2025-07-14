@@ -1,1 +1,1 @@
-[Counter (https://dci-marc.github.io/gaza-genocide/)](https://dci-marc.github.io/gaza-genocide/)
+[https://dci-marc.github.io/gaza-genocide/](https://dci-marc.github.io/gaza-genocide/)
