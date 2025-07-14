@@ -35,8 +35,8 @@
             bottom: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            opacity: 0.6;
-            padding: 2rem 3rem;
+            opacity: 0.85;
+            padding: 2rem 3rem 2rem 4rem;
             border-radius: 1rem;
             background: linear-gradient(
                     to bottom,
@@ -47,21 +47,36 @@
                     #007A3D 66.67%,
                     #007A3D 100%
             );
-            border-top: 6px solid #FF0015;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             text-align: center;
+            overflow: hidden;
+        }
+
+        .counter-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 5rem;
+            background-color: #FF0015;
+            clip-path: polygon(0 0, 100% 50%, 0 100%);
         }
 
         .counter-container .days-count {
             font-size: 5rem;
             font-weight: bold;
             color: #FF0015;
+            position: relative;
+            z-index: 1;
         }
 
         .counter-container .label {
             margin-top: 0.5rem;
             font-size: 1rem;
             color: #fff;
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
