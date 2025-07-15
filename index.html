@@ -10,7 +10,6 @@
         body {
             margin: 0;
             padding: 0;
-            background: url('https://github.com/dci-marc/gaza-genocide/raw/refs/heads/main/assets/image/GuJwDuoXgAA7SWs.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #e0e0e0;
             font-family: 'Nosifer', sans-serif;
@@ -18,6 +17,41 @@
             align-items: center;
             justify-content: left;
             height: 100vh;
+            overflow: hidden;
+        }
+
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 1);
+            z-index: 10000;
+            transition: opacity 0.7s ease-out;
+            opacity: 1;
+        }
+
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            border: 8px solid rgba(229, 231, 235, 0.3);
+            border-top-color: #FF0015;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1.2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         #bg-video {
@@ -116,6 +150,11 @@
     </style>
 </head>
 <body>
+<!-- Loader Overlay -->
+<div id="loader-overlay">
+    <div class="loader-spinner"></div>
+</div>
+
 <video autoplay muted loop playsinline id="bg-video">
     <source src="https://github.com/dci-marc/gaza-genocide/raw/refs/heads/main/assets/video/hindshall.mp4" type="video/mp4" />
     Your browser does not support HTML5 video.
@@ -131,47 +170,129 @@
 </div>
 
 <script>
-    const startDate = new Date("2023-10-07");
+    document.addEventListener('DOMContentLoaded', () => {
+        const loaderOverlay = document.getElementById('loader-overlay');
+        const bgVideo = document.getElementById('bg-video');
+        const namesList = document.getElementById('names-list');
+        const jsonUrl = 'https://data.techforpalestine.org/api/v2/killed-in-gaza.min.json';
+        const backgroundImageUrl = 'https://github.com/dci-marc/gaza-genocide/raw/refs/heads/main/assets/image/GuJwDuoXgAA7SWs.jpg';
 
-    function updateDaysCount() {
-        const now = new Date();
-        const diffTime = now - startDate;
-        const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        document.getElementById("days").textContent = days;
-    }
+        const startDate = new Date("2023-10-07");
+        function updateDaysCount() {
+            const now = new Date();
+            const diffTime = now - startDate;
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById("days").textContent = days;
+        }
 
-    updateDaysCount();
-    setInterval(updateDaysCount, 1000 * 60);
-
-    const namesList = document.getElementById('names-list');
-    const jsonUrl = 'https://data.techforpalestine.org/api/v2/killed-in-gaza.min.json';
-
-    fetch(jsonUrl)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            data.forEach(person => {
-                if (person.en_name && person.en_name.trim() !== "") {
-                    const nameElement = document.createElement('div');
-                    nameElement.textContent = person.en_name.trim()  + ", " + person.age;
-                    namesList.appendChild(nameElement);
-                }
-            });
-
-            const numNames = namesList.children.length;
-            const animationDuration = numNames * 1.5;
-            namesList.style.animationDuration = `${animationDuration}s`;
-        })
-        .catch(error => {
-            console.error('Failed to fetch names:', error);
-            const errorElement = document.createElement('div');
-            errorElement.textContent = 'Could not load names.';
-            namesList.appendChild(errorElement);
+        const imageLoadPromise = new Promise((resolve) => {
+            const img = new Image();
+            img.src = backgroundImageUrl;
+            img.onload = () => {
+                console.log('Background image loaded.');
+                document.body.style.backgroundImage = `url('${backgroundImageUrl}')`;
+                document.body.style.backgroundRepeat = 'no-repeat';
+                document.body.style.backgroundPosition = 'center center';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.body.style.backgroundSize = 'cover';
+                resolve();
+            };
+            img.onerror = () => {
+                console.error('Background image failed to load:', backgroundImageUrl);
+                resolve();
+            };
         });
+
+        const videoLoadPromise = new Promise((resolve) => {
+            if (bgVideo.readyState >= 4) { // HAVE_ENOUGH_DATA
+                console.log('Background video already ready.');
+                resolve();
+            } else {
+                const videoReadyHandler = () => {
+                    console.log('Background video loaded/can play through.');
+                    bgVideo.removeEventListener('canplaythrough', videoReadyHandler);
+                    bgVideo.removeEventListener('loadeddata', videoReadyHandler);
+                    resolve();
+                };
+                bgVideo.addEventListener('canplaythrough', videoReadyHandler, { once: true });
+                bgVideo.addEventListener('loadeddata', videoReadyHandler, { once: true });
+                bgVideo.onerror = () => {
+                    console.error('Background video failed to load:', bgVideo.src);
+                    bgVideo.removeEventListener('canplaythrough', videoReadyHandler);
+                    bgVideo.removeEventListener('loadeddata', videoReadyHandler);
+                    resolve();
+                };
+                bgVideo.load();
+            }
+        });
+
+        const apiFetchPromise = new Promise((resolve) => {
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API data fetched successfully.');
+                    data.forEach(person => {
+                        if (person.en_name && person.en_name.trim() !== "") {
+                            const nameElement = document.createElement('div');
+                            nameElement.textContent = person.en_name.trim() + ", " + person.age;
+                            namesList.appendChild(nameElement);
+                        }
+                    });
+
+                    const numNames = namesList.children.length;
+                    const animationDuration = numNames > 0 ? numNames * 1.5 : 60;
+                    namesList.style.animationDuration = `${animationDuration}s`;
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('Failed to fetch names:', error);
+                    const errorElement = document.createElement('div');
+                    errorElement.textContent = 'Could not load names.';
+                    namesList.appendChild(errorElement);
+                    resolve();
+                });
+        });
+
+        Promise.all([imageLoadPromise, videoLoadPromise, apiFetchPromise])
+            .then(() => {
+                console.log('All resources loaded. Hiding loader.');
+                loaderOverlay.classList.add('loader-hidden');
+
+                loaderOverlay.addEventListener('transitionend', () => {
+                    console.log('Loader transition ended. Removing loader from DOM.');
+                    loaderOverlay.remove();
+                    document.body.style.overflow = '';
+                }, { once: true });
+
+                setTimeout(() => {
+                    if (loaderOverlay.parentNode) {
+                        console.warn('Loader transitionend might not have fired. Forcing loader removal.');
+                        loaderOverlay.remove();
+                        document.body.style.overflow = '';
+                    }
+                }, 1000);
+
+                updateDaysCount();
+                setInterval(updateDaysCount, 1000 * 60);
+            })
+            .catch(error => {
+                console.error("Promise.all caught an unexpected error, forcing loader hide:", error);
+                loaderOverlay.classList.add('loader-hidden');
+                setTimeout(() => {
+                    if (loaderOverlay.parentNode) {
+                        loaderOverlay.remove();
+                        document.body.style.overflow = '';
+                    }
+                }, 1000);
+                updateDaysCount();
+                setInterval(updateDaysCount, 1000 * 60);
+            });
+    });
 </script>
 </body>
 </html>
