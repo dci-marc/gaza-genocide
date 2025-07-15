@@ -35,6 +35,10 @@
             opacity: 1;
         }
 
+        #loader-overlay.loader-hidden {
+            opacity: 0;
+        }
+
         .loader-hidden {
             opacity: 0;
             pointer-events: none;
@@ -47,6 +51,12 @@
             width: 80px;
             height: 80px;
             animation: spin 1.2s linear infinite;
+        }
+
+        #loader-overlay.loader-hidden .loader-spinner {
+            transform: scale(0.5);
+            opacity: 0;
+            transition: all 0.5s ease-out;
         }
 
         @keyframes spin {
@@ -189,7 +199,6 @@
             const img = new Image();
             img.src = backgroundImageUrl;
             img.onload = () => {
-                console.log('Background image loaded.');
                 document.body.style.backgroundImage = `url('${backgroundImageUrl}')`;
                 document.body.style.backgroundRepeat = 'no-repeat';
                 document.body.style.backgroundPosition = 'center center';
@@ -205,11 +214,9 @@
 
         const videoLoadPromise = new Promise((resolve) => {
             if (bgVideo.readyState >= 4) { // HAVE_ENOUGH_DATA
-                console.log('Background video already ready.');
                 resolve();
             } else {
                 const videoReadyHandler = () => {
-                    console.log('Background video loaded/can play through.');
                     bgVideo.removeEventListener('canplaythrough', videoReadyHandler);
                     bgVideo.removeEventListener('loadeddata', videoReadyHandler);
                     resolve();
@@ -235,7 +242,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('API data fetched successfully.');
                     data.forEach(person => {
                         if (person.en_name && person.en_name.trim() !== "") {
                             const nameElement = document.createElement('div');
@@ -260,22 +266,23 @@
 
         Promise.all([imageLoadPromise, videoLoadPromise, apiFetchPromise])
             .then(() => {
-                console.log('All resources loaded. Hiding loader.');
-                loaderOverlay.classList.add('loader-hidden');
+                requestAnimationFrame(() => {
+                    loaderOverlay.classList.add('loader-hidden');
 
-                loaderOverlay.addEventListener('transitionend', () => {
-                    console.log('Loader transition ended. Removing loader from DOM.');
-                    loaderOverlay.remove();
-                    document.body.style.overflow = '';
-                }, { once: true });
+                    loaderOverlay.addEventListener('transitionend', (event) => {
+                        if (event.propertyName === 'opacity') {
+                            loaderOverlay.remove();
+                            document.body.style.overflow = '';
+                        }
+                    }, { once: true });
 
-                setTimeout(() => {
-                    if (loaderOverlay.parentNode) {
-                        console.warn('Loader transitionend might not have fired. Forcing loader removal.');
-                        loaderOverlay.remove();
-                        document.body.style.overflow = '';
-                    }
-                }, 1000);
+                    setTimeout(() => {
+                        if (loaderOverlay.parentNode) {
+                            loaderOverlay.remove();
+                            document.body.style.overflow = '';
+                        }
+                    }, 1000);
+                });
 
                 updateDaysCount();
                 setInterval(updateDaysCount, 1000 * 60);
