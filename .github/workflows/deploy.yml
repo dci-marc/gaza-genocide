@@ -13,6 +13,10 @@ jobs:
       pages: write    # Allows the workflow to deploy to GitHub Pages
       id-token: write # Required for authenticating with GitHub Pages
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # Optional: sets the URL for the environment in GitHub UI
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4 # Use the official checkout action
@@ -22,9 +26,6 @@ jobs:
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3 # Uploads the static files as an artifact
         with:
-          # The path to the directory containing your deployable site files.
-          # Since you mentioned static content and no specific build folder,
-          # we assume the root of the checked-out repository is the source.
           path: './' # This will upload the entire root directory content
 
       - name: Deploy to GitHub Pages
