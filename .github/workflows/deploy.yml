@@ -1,0 +1,32 @@
+name: Deploy Static Content to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main # This workflow runs when changes are pushed to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Use the latest Ubuntu runner
+    permissions:
+      contents: write # Allows the workflow to write to the repository (e.g., for gh-pages branch or artifacts)
+      pages: write    # Allows the workflow to deploy to GitHub Pages
+      id-token: write # Required for authenticating with GitHub Pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Use the official checkout action
+        with:
+          lfs: true # Crucial: This ensures Git LFS files are fetched and resolved
+
+      - name: Upload artifact for GitHub Pages
+        uses: actions/upload-pages-artifact@v3 # Uploads the static files as an artifact
+        with:
+          # The path to the directory containing your deployable site files.
+          # Since you mentioned static content and no specific build folder,
+          # we assume the root of the checked-out repository is the source.
+          path: './' # This will upload the entire root directory content
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # Deploys the uploaded artifact to GitHub Pages
