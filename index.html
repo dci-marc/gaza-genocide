@@ -160,6 +160,48 @@
             position: relative;
             z-index: 1;
         }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                height: auto;
+                overflow: auto;
+            }
+
+            #bg-video {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+
+            #names-container {
+                position: static;
+                width: 90%;
+                max-height: 50vh;
+                margin: 1rem 0;
+                overflow-y: auto;
+                font-size: clamp(0.8rem, 2vw, 1rem);
+            }
+
+            #names-list {
+                animation: none;
+                position: static;
+            }
+
+            .counter-container {
+                position: static;
+                width: 90%;
+                margin-bottom: 2rem;
+                transform: none;
+                padding: 1rem;
+            }
+
+            .counter-container .days-count {
+                font-size: clamp(2rem, 6vw, 3rem);
+            }
+        }
     </style>
 </head>
 <body>
@@ -178,7 +220,7 @@
     <div id="names-list"></div>
 </div>
 
-<div class="counter-container">
+<div class="counter-container" role="region" aria-label="Days of genocide in Gaza">
     <div class="days-count" id="days">0</div>
     <div class="label">days of genocide in Gaza</div>
 </div>
