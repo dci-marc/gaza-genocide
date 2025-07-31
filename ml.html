@@ -183,8 +183,14 @@
 
                     const numNames = namesList.children.length;
                     const animationDuration = numNames > 0 ? numNames * 1.5 : 60;
-                    namesList.style.animation = `scroll-up ${animationDuration}s linear infinite`;
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            namesList.style.animation = `scroll-up ${animationDuration}s linear infinite`;
+                        }, 50);
+                    });
+
                     resolve();
+
                 })
                 .catch(error => {
                     console.error('Failed to fetch names:', error);
