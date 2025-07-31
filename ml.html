@@ -97,7 +97,6 @@
 
         #names-list {
             position: relative;
-            animation: scroll-up linear infinite;
         }
 
         #names-list div {
@@ -107,7 +106,6 @@
             white-space: nowrap;
         }
 
-        /* Optional: body anpassen, damit alles zentriert */
         body {
             margin: 0;
             padding: 0;
@@ -185,7 +183,7 @@
 
                     const numNames = namesList.children.length;
                     const animationDuration = numNames > 0 ? numNames * 1.5 : 60;
-                    namesList.style.animationDuration = `${animationDuration}s`;
+                    namesList.style.animation = `scroll-up ${animationDuration}s linear infinite`;
                     resolve();
                 })
                 .catch(error => {
