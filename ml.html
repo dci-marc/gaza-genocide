@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genocide in Gaza</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fondamento:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-size: cover;
+            background-color: black;
+            color: #e0e0e0;
+            font-family: 'Nosifer', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 1);
+            z-index: 10000;
+            font-family: sans-serif;
+            transition: opacity 0.7s ease-out;
+            opacity: 1;
+        }
+
+        #loader-overlay.loader-hidden {
+            opacity: 0;
+        }
+
+        .loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-spinner {
+            margin-bottom: 1rem;
+            border: 8px solid rgba(229, 231, 235, 0.3);
+            border-top-color: #FF0015;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1.2s linear infinite;
+        }
+
+        #loader-overlay.loader-hidden .loader-spinner {
+            transform: scale(0.5);
+            opacity: 0;
+            transition: all 0.5s ease-out;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #names-header {
+            width: 100%;
+            background-color: rgb(33, 33, 33);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 1rem 0;
+            z-index: 2;
+            position: relative;
+        }
+
+        #names-container {
+            width: 100%;
+            max-width: 30rem;
+            height: 80vh;
+            background-color: rgba(0, 0, 0);
+            overflow: hidden;
+            font-family: 'Fondamento', sans-serif;
+            color: #EEE;
+            position: relative;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        #names-list {
+            position: relative;
+            animation: scroll-up linear infinite;
+        }
+
+        #names-list div {
+            padding: 4px 15px;
+            text-align: center;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        /* Optional: body anpassen, damit alles zentriert */
+        body {
+            margin: 0;
+            padding: 0;
+            background-size: cover;
+            color: #e0e0e0;
+            font-family: 'Nosifer', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @keyframes scroll-up {
+            from {
+                transform: translateY(180px);
+            }
+            to {
+                transform: translateY(-100%);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader-overlay">
+    <div class="loader-spinner"></div>
+    <div>This could take a couple of seconds</div>
+</div>
+
+<div id="names-header">
+    🇵🇸    🕊️🌹 إِنَّا لِلّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ
+</div>
+<div id="names-container">
+    <div id="names-list"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loaderOverlay = document.getElementById('loader-overlay');
+        const namesList = document.getElementById('names-list');
+        const jsonUrl = 'https://dci-marc.github.io/gaza-genocide/data.json';
+
+        const startDate = new Date("2023-10-07");
+        function updateDaysCount() {
+            const now = new Date();
+            const diffTime = now - startDate;
+            const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById("days").textContent = days;
+        }
+
+        const apiFetchPromise = new Promise((resolve) => {
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Shuffle the data array using Fisher-Yates algorithm
+                    for (let i = data.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [data[i], data[j]] = [data[j], data[i]];
+                    }
+
+                    data.forEach(person => {
+                        if (person.en_name && person.en_name.trim() !== "") {
+                            const nameElement = document.createElement('div');
+                            nameElement.textContent = person.en_name.trim() + ", " + person.age;
+                            namesList.appendChild(nameElement);
+                        }
+                    });
+
+                    const numNames = namesList.children.length;
+                    const animationDuration = numNames > 0 ? numNames * 1.5 : 60;
+                    namesList.style.animationDuration = `${animationDuration}s`;
+                    resolve();
+                })
+                .catch(error => {
+                    console.error('Failed to fetch names:', error);
+                    const errorElement = document.createElement('div');
+                    errorElement.textContent = 'Could not load names.';
+                    namesList.appendChild(errorElement);
+                    resolve();
+                });
+        });
+
+        Promise.all([apiFetchPromise])
+            .then(() => {
+                requestAnimationFrame(() => {
+                    loaderOverlay.classList.add('loader-hidden');
+
+                    loaderOverlay.addEventListener('transitionend', (event) => {
+                        if (event.propertyName === 'opacity') {
+                            loaderOverlay.remove();
+                            document.body.style.overflow = '';
+                        }
+                    }, { once: true });
+
+                    setTimeout(() => {
+                        if (loaderOverlay.parentNode) {
+                            loaderOverlay.remove();
+                            document.body.style.overflow = '';
+                        }
+                    }, 1000);
+                });
+
+                updateDaysCount();
+                setInterval(updateDaysCount, 1000 * 60);
+            })
+            .catch(error => {
+                console.error("Promise.all caught an unexpected error, forcing loader hide:", error);
+                loaderOverlay.classList.add('loader-hidden');
+                setTimeout(() => {
+                    if (loaderOverlay.parentNode) {
+                        loaderOverlay.remove();
+                        document.body.style.overflow = '';
+                    }
+                }, 1000);
+                updateDaysCount();
+                setInterval(updateDaysCount, 1000 * 60);
+            });
+    });
+</script>
+</body>
+</html>
